@@ -82,10 +82,12 @@ export default function AdminPage() {
         {status && status.durableStorage === false && (
           <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 text-sm mb-6">
             <strong>Внимание:</strong> постоянное хранилище (Vercel Blob) не
-            подключено. Загруженные отчёты могут периодически пропадать
-            после перезапуска сервера. Подключите Vercel Blob и добавьте
-            переменную окружения <code className="bg-amber-100 px-1 rounded">BLOB_READ_WRITE_TOKEN</code>{" "}
-            — подробности в README проекта.
+            обнаружено в текущей среде выполнения. Загруженные отчёты могут
+            периодически пропадать после перезапуска сервера. Если вы уже
+            создали и подключили Blob-хранилище к проекту в Vercel, скорее
+            всего просто нужно сделать <strong>Redeploy</strong> проекта,
+            чтобы переменные подключения подхватились. Подробности — в
+            README проекта.
           </div>
         )}
 
