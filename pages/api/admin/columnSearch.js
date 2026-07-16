@@ -12,7 +12,7 @@ const ALLOWED_FIELDS = [
 ];
 
 export default async function handler(req, res) {
-  const store = readStore();
+  const store = await readStore();
   const rows = getAllRows(store);
 
   const filters = {};

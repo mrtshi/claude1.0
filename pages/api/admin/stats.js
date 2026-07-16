@@ -10,7 +10,7 @@ import {
 } from "../../../lib/dataUtils";
 
 export default async function handler(req, res) {
-  const store = readStore();
+  const store = await readStore();
   const rows = getAllRows(store);
 
   const { executor, period, dailyPeriod } = req.query;

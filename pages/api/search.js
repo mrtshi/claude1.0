@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Введите номер заявки или серийный номер" });
   }
 
-  const store = readStore();
+  const store = await readStore();
   const rows = getAllRows(store);
   const matches = searchTickets(rows, query);
 

@@ -10,9 +10,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Некорректный идентификатор отчёта" });
   }
 
-  const store = readStore();
+  const store = await readStore();
   store.reports[reportKey] = { fileName: null, uploadedAt: null, rows: [] };
-  writeStore(store);
+  const saved = await writeStore(store);
+
+  if (!saved) {
+    return res.status(500).json({ error: "Не удалось сохранить изменения в хранилище" });
+  }
 
   return res.status(200).json({ success: true });
 }

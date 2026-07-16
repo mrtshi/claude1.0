@@ -49,13 +49,20 @@ export default async function handler(req, res) {
       });
     }
 
-    const store = readStore();
+    const store = await readStore();
     store.reports[reportKey] = {
       fileName: file.originalFilename || "report.xlsx",
       uploadedAt: new Date().toISOString(),
       rows,
     };
-    writeStore(store);
+    const saved = await writeStore(store);
+
+    if (!saved) {
+      return res.status(500).json({
+        error:
+          "Файл был обработан, но не удалось сохранить данные в постоянное хранилище. Проверьте настройку Vercel Blob (переменная BLOB_READ_WRITE_TOKEN).",
+      });
+    }
 
     return res.status(200).json({
       success: true,

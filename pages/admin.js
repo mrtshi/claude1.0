@@ -79,6 +79,16 @@ export default function AdminPage() {
           </Link>
         </div>
 
+        {status && status.durableStorage === false && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 text-sm mb-6">
+            <strong>Внимание:</strong> постоянное хранилище (Vercel Blob) не
+            подключено. Загруженные отчёты могут периодически пропадать
+            после перезапуска сервера. Подключите Vercel Blob и добавьте
+            переменную окружения <code className="bg-amber-100 px-1 rounded">BLOB_READ_WRITE_TOKEN</code>{" "}
+            — подробности в README проекта.
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <UploadCard
             title="Отчёт за 2026 год"
