@@ -112,7 +112,7 @@ export default function AdminPage() {
 
         {tab === "overview" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 flex flex-col gap-6">
+            <div className="lg:col-span-2 flex flex-col gap-6 min-w-0">
               <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
                 <h3 className="font-semibold text-gray-800 mb-4">Статистика по исполнителю</h3>
                 <div className="flex flex-col sm:flex-row gap-3 mb-4">
@@ -174,7 +174,7 @@ export default function AdminPage() {
               )}
             </div>
 
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 min-w-0">
               {stats && (
                 <DailyChart
                   data={stats.daily || []}

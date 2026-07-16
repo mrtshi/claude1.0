@@ -15,7 +15,7 @@ export default function DailyChart({ data, period, onPeriodChange }) {
   );
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 flex flex-col gap-3">
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 flex flex-col gap-3 min-w-0 overflow-hidden">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <h3 className="font-semibold text-gray-800 text-sm">Заявки по дням</h3>
         <select
@@ -34,8 +34,8 @@ export default function DailyChart({ data, period, onPeriodChange }) {
       {data.length === 0 ? (
         <div className="text-xs text-gray-400 italic py-8 text-center">Нет данных за выбранный период</div>
       ) : (
-        <div style={{ width: "100%", height: 180 }}>
-          <ResponsiveContainer>
+        <div className="w-full min-w-0" style={{ height: 180 }}>
+          <ResponsiveContainer width="100%" height="100%" debounce={50}>
             <BarChart data={data} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eef1f6" />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} interval={data.length > 15 ? Math.floor(data.length / 8) : 0} />
