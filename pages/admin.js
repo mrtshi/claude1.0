@@ -119,7 +119,7 @@ export default function AdminPage() {
                   <select
                     value={executor}
                     onChange={(e) => setExecutor(e.target.value)}
-                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-polair-blue"
+                    className="w-full sm:flex-1 sm:min-w-0 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-polair-blue"
                   >
                     <option value="">Все исполнители</option>
                     {stats?.executors?.map((ex) => (
@@ -131,7 +131,7 @@ export default function AdminPage() {
                   <select
                     value={period}
                     onChange={(e) => setPeriod(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-polair-blue"
+                    className="w-full sm:w-auto sm:flex-shrink-0 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-polair-blue"
                   >
                     {PERIOD_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -144,13 +144,9 @@ export default function AdminPage() {
                 {loadingStats ? (
                   <p className="text-sm text-gray-400">Загрузка...</p>
                 ) : stats?.executorStats ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <StatBox label="Кол-во заявок" value={stats.executorStats.totalTickets} />
-                    <StatBox
-                      label="Сумма, руб"
-                      value={stats.executorStats.totalSum?.toLocaleString("ru-RU")}
-                    />
-                    <div className="col-span-2 sm:col-span-1">
+                    <div>
                       <p className="text-xs text-gray-400 mb-1">По статусам</p>
                       <div className="flex flex-col gap-1">
                         {Object.entries(stats.executorStats.statusCounts || {}).map(
