@@ -26,6 +26,10 @@ export default function UploadCard({ title, reportKey, status, onChanged }) {
       if (!res.ok) {
         setMessageType("error");
         setMessage(data.error || "Ошибка загрузки файла");
+      } else if (data.warning) {
+        setMessageType("warning");
+        setMessage(`Загружено строк: ${data.rowCount}. ${data.warning}`);
+        onChanged?.();
       } else {
         setMessageType("success");
         setMessage(`Загружено строк: ${data.rowCount}`);
@@ -102,6 +106,8 @@ export default function UploadCard({ title, reportKey, status, onChanged }) {
           className={`text-xs rounded-lg px-3 py-2 ${
             messageType === "error"
               ? "bg-red-50 text-red-600"
+              : messageType === "warning"
+              ? "bg-amber-50 text-amber-700"
               : "bg-green-50 text-green-700"
           }`}
         >

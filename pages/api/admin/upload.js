@@ -1,4 +1,4 @@
-import { readStore, writeStore, getReportKey } from "../../../lib/store";
+import { readStore, writeStoreWithMeta, getReportKey } from "../../../lib/store";
 import { parseWorkbook } from "../../../lib/parseReport";
 import formidable from "formidable";
 import fs from "fs";
@@ -55,12 +55,11 @@ export default async function handler(req, res) {
       uploadedAt: new Date().toISOString(),
       rows,
     };
-    const saved = await writeStore(store);
+    const { saved, usingDurableStorage } = await writeStoreWithMeta(store);
 
     if (!saved) {
       return res.status(500).json({
-        error:
-          "Файл был обработан, но не удалось сохранить данные в постоянное хранилище. Проверьте настройку Vercel Blob (переменная BLOB_READ_WRITE_TOKEN).",
+        error: "Файл был обработан, но не удалось сохранить данные ни в постоянное хранилище, ни во временное. Попробуйте ещё раз.",
       });
     }
 
@@ -68,6 +67,9 @@ export default async function handler(req, res) {
       success: true,
       fileName: store.reports[reportKey].fileName,
       rowCount: rows.length,
+      warning: usingDurableStorage
+        ? null
+        : "Данные сохранены только во временную память сервера — постоянное хранилище (Vercel Blob) сейчас недоступно. Отчёт может пропасть при перезапуске сервера. Проверьте подключение Blob в панели администратора.",
     });
   } catch (e) {
     console.error(e);
