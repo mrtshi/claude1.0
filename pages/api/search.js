@@ -1,5 +1,5 @@
 import { readStore } from "../../lib/store";
-import { getAllRows, searchTickets, normalize } from "../../lib/dataUtils";
+import { getAllRows, searchTickets, dedupeByTicket } from "../../lib/dataUtils";
 
 export default async function handler(req, res) {
   const query = (req.query.q || "").toString().trim();
@@ -18,17 +18,9 @@ export default async function handler(req, res) {
 
   // If multiple work-lines belong to the same ticket, merge into one
   // logical ticket but keep totals summed.
-  const byTicket = {};
-  for (const row of matches) {
-    const key = row.ticketNumber || row.serialNumber;
-    if (!byTicket[key]) {
-      byTicket[key] = { ...row, sum: 0, totalRub: 0 };
-    }
-    byTicket[key].sum += row.sum || 0;
-    byTicket[key].totalRub += row.totalRub || row.sum || 0;
-  }
+  const tickets = dedupeByTicket(matches);
 
-  const results = Object.values(byTicket).map((r) => ({
+  const results = tickets.map((r) => ({
     ticketNumber: r.ticketNumber,
     nomenclature: r.nomenclature,
     serialNumber: r.serialNumber,
@@ -39,7 +31,7 @@ export default async function handler(req, res) {
     location: r.location,
     organization: r.organization,
     malfunction: r.malfunction,
-    totalRub: r.totalRub,
+    totalRub: r.sum,
   }));
 
   return res.status(200).json({ results });

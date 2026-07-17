@@ -1,4 +1,5 @@
 import { readStore } from "../../../lib/store";
+import { requireAdminSession } from "../../../lib/adminAuth";
 import { getAllRows, advancedSearch, dedupeByTicket } from "../../../lib/dataUtils";
 
 const ALLOWED_FIELDS = [
@@ -12,6 +13,8 @@ const ALLOWED_FIELDS = [
 ];
 
 export default async function handler(req, res) {
+  if (requireAdminSession(req, res)) return;
+
   const store = await readStore();
   const rows = getAllRows(store);
 

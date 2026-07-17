@@ -23,6 +23,12 @@ const TABS = [
 ];
 
 export default function AdminPage() {
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loggingIn, setLoggingIn] = useState(false);
+
   const [status, setStatus] = useState(null);
   const [stats, setStats] = useState(null);
   const [executor, setExecutor] = useState("");
@@ -30,36 +36,177 @@ export default function AdminPage() {
   const [dailyPeriod, setDailyPeriod] = useState("7d");
   const [tab, setTab] = useState("overview");
   const [loadingStats, setLoadingStats] = useState(false);
+  const [statusError, setStatusError] = useState("");
+  const [statsError, setStatsError] = useState("");
 
   const fetchStatus = useCallback(async () => {
-    const res = await fetch("/api/admin/status");
-    const data = await res.json();
-    setStatus(data);
+    setStatusError("");
+    try {
+      const res = await fetch("/api/admin/status");
+      if (res.status === 401) {
+        setAuthenticated(false);
+        return;
+      }
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`Сервер вернул ошибку ${res.status}${text ? `: ${text.slice(0, 200)}` : ""}`);
+      }
+      const data = await res.json();
+      setStatus(data);
+    } catch (err) {
+      console.error("fetchStatus failed", err);
+      setStatusError(
+        "Не удалось загрузить информацию о загруженных файлах. " +
+          (err.message || "Проверьте соединение и попробуйте обновить страницу.")
+      );
+    }
   }, []);
 
   const fetchStats = useCallback(async () => {
     setLoadingStats(true);
-    const params = new URLSearchParams();
-    if (executor) params.append("executor", executor);
-    if (period) params.append("period", period);
-    params.append("dailyPeriod", dailyPeriod);
-    const res = await fetch(`/api/admin/stats?${params.toString()}`);
-    const data = await res.json();
-    setStats(data);
-    setLoadingStats(false);
+    setStatsError("");
+    try {
+      const params = new URLSearchParams();
+      if (executor) params.append("executor", executor);
+      if (period) params.append("period", period);
+      params.append("dailyPeriod", dailyPeriod);
+      const res = await fetch(`/api/admin/stats?${params.toString()}`);
+      if (res.status === 401) {
+        setAuthenticated(false);
+        return;
+      }
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`Сервер вернул ошибку ${res.status}${text ? `: ${text.slice(0, 200)}` : ""}`);
+      }
+      const data = await res.json();
+      setStats(data);
+    } catch (err) {
+      console.error("fetchStats failed", err);
+      setStats(null);
+      setStatsError(
+        "Не удалось загрузить статистику. " +
+          (err.message || "Проверьте соединение и попробуйте обновить страницу.")
+      );
+    } finally {
+      setLoadingStats(false);
+    }
   }, [executor, period, dailyPeriod]);
 
+  // On mount, check whether we already have a valid session cookie
+  // before showing either the login screen or the dashboard.
   useEffect(() => {
-    fetchStatus();
-  }, [fetchStatus]);
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/check-session");
+        const data = await res.json();
+        setAuthenticated(Boolean(data.authenticated));
+      } catch (err) {
+        setAuthenticated(false);
+      } finally {
+        setAuthChecked(true);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
+    if (!authenticated) return;
+    fetchStatus();
+  }, [authenticated, fetchStatus]);
+
+  useEffect(() => {
+    if (!authenticated) return;
     fetchStats();
-  }, [fetchStats]);
+  }, [authenticated, fetchStats]);
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    setLoginError("");
+    setLoggingIn(true);
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: passwordInput }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setLoginError(data.error || "Неверный пароль");
+      } else {
+        setAuthenticated(true);
+        setPasswordInput("");
+      }
+    } catch (err) {
+      setLoginError("Ошибка соединения с сервером");
+    } finally {
+      setLoggingIn(false);
+    }
+  }
 
   function handleReportsChanged() {
     fetchStatus();
     fetchStats();
+  }
+
+  if (!authChecked) {
+    return (
+      <>
+        <Head>
+          <title>Панель администратора — Polair</title>
+        </Head>
+        <Header />
+        <main className="max-w-md mx-auto px-4 py-16 text-center text-gray-400 text-sm">
+          Загрузка...
+        </main>
+      </>
+    );
+  }
+
+  if (!authenticated) {
+    return (
+      <>
+        <Head>
+          <title>Панель администратора — Polair</title>
+        </Head>
+        <Header />
+        <main className="max-w-sm mx-auto px-4 py-16">
+          <h1 className="text-xl font-bold text-gray-800 text-center mb-2">
+            Панель администратора
+          </h1>
+          <p className="text-gray-500 text-center text-sm mb-8">
+            Введите пароль для доступа к статистике
+          </p>
+          <form onSubmit={handleLogin} className="flex flex-col gap-3">
+            <input
+              type="password"
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              placeholder="Пароль"
+              autoFocus
+              className="border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-polair-blue focus:border-transparent text-center tracking-widest"
+              inputMode="numeric"
+            />
+            <button
+              type="submit"
+              disabled={loggingIn || !passwordInput}
+              className="bg-polair-blue hover:bg-polair-dark transition-colors text-white font-medium rounded-lg px-6 py-3 disabled:opacity-60"
+            >
+              {loggingIn ? "Проверка..." : "Войти"}
+            </button>
+          </form>
+          {loginError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm mt-4 text-center">
+              {loginError}
+            </div>
+          )}
+          <div className="text-center mt-6">
+            <Link href="/" className="text-sm text-polair-blue hover:underline">
+              ← На страницу поиска
+            </Link>
+          </div>
+        </main>
+      </>
+    );
   }
 
   return (
@@ -78,6 +225,30 @@ export default function AdminPage() {
             ← На страницу поиска
           </Link>
         </div>
+
+        {statusError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm mb-6 flex items-center justify-between gap-3 flex-wrap">
+            <span>{statusError}</span>
+            <button
+              onClick={fetchStatus}
+              className="bg-red-100 hover:bg-red-200 transition-colors text-red-700 text-xs font-medium rounded-md px-3 py-1.5 whitespace-nowrap"
+            >
+              Повторить попытку
+            </button>
+          </div>
+        )}
+
+        {statsError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm mb-6 flex items-center justify-between gap-3 flex-wrap">
+            <span>{statsError}</span>
+            <button
+              onClick={fetchStats}
+              className="bg-red-100 hover:bg-red-200 transition-colors text-red-700 text-xs font-medium rounded-md px-3 py-1.5 whitespace-nowrap"
+            >
+              Повторить попытку
+            </button>
+          </div>
+        )}
 
         {status && status.durableStorage === false && (
           <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 text-sm mb-6">

@@ -1,5 +1,6 @@
 import { readStore, writeStoreWithMeta, getReportKey } from "../../../lib/store";
 import { parseWorkbook } from "../../../lib/parseReport";
+import { requireAdminSession } from "../../../lib/adminAuth";
 import formidable from "formidable";
 import fs from "fs";
 
@@ -23,6 +24,8 @@ export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
+
+  if (requireAdminSession(req, res)) return;
 
   try {
     const { fields, files } = await parseForm(req);

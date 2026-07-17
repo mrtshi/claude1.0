@@ -1,9 +1,12 @@
 import { readStore, writeStore, getReportKey } from "../../../lib/store";
+import { requireAdminSession } from "../../../lib/adminAuth";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
+
+  if (requireAdminSession(req, res)) return;
 
   const reportKey = getReportKey(req.body.reportKey);
   if (!reportKey) {

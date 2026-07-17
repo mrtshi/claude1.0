@@ -63,14 +63,11 @@ export default function Home() {
       <Header />
 
       <main className="max-w-2xl mx-auto px-4 py-10 sm:py-16">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 text-center mb-3">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 text-center mb-8">
           Отслеживание заявок на ремонт оборудования
         </h1>
-        <p className="text-gray-500 text-center mb-8 text-sm sm:text-base">
-          Введите номер заявки или серийный номер оборудования для получения информации
-        </p>
 
-        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-8">
+        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-3">
           <input
             type="text"
             value={query}
@@ -87,6 +84,10 @@ export default function Home() {
             {loading ? "Поиск..." : "Найти"}
           </button>
         </form>
+
+        <p className="text-gray-500 text-center mb-8 text-sm sm:text-base">
+          Введите номер заявки или серийный номер оборудования для получения информации
+        </p>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm mb-6">

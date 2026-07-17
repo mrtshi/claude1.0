@@ -1,6 +1,9 @@
 import { readStoreWithMeta } from "../../../lib/store";
+import { requireAdminSession } from "../../../lib/adminAuth";
 
 export default async function handler(req, res) {
+  if (requireAdminSession(req, res)) return;
+
   const { store, usingDurableStorage } = await readStoreWithMeta();
   const summarize = (r) => ({
     fileName: r.fileName,
