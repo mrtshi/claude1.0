@@ -27,18 +27,20 @@ export default function RepeatTickets({ repeats }) {
           <button
             key={group.key + idx}
             onClick={() => setActiveGroup(idx)}
-            className="w-full text-left px-4 py-3 bg-white border border-gray-200 rounded-lg hover:bg-polair-light hover:border-polair-blue/40 transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1"
+            className="w-full text-left px-4 py-3 bg-white border border-gray-200 rounded-lg hover:bg-polair-light hover:border-polair-blue/40 transition-colors flex flex-col gap-2"
           >
-            <div className="text-sm">
-              <span className="font-medium text-gray-800">{group.nomenclature || "Оборудование"}</span>
-              <span className="text-gray-400"> · Зав.№ {group.serialNumber || "—"}</span>
-            </div>
-            <div className="text-xs text-gray-500 flex items-center gap-3">
-              <span>{group.location || "адрес не указан"}</span>
-              <span className="font-medium text-polair-blue">{group.executor || "—"}</span>
-              <span className="bg-orange-100 text-orange-700 rounded-full px-2.5 py-1 font-semibold whitespace-nowrap">
+            <div className="flex items-start justify-between gap-2">
+              <div className="text-sm min-w-0">
+                <span className="font-medium text-gray-800">{group.nomenclature || "Оборудование"}</span>
+                <span className="text-gray-400"> · Зав.№ {group.serialNumber || "—"}</span>
+              </div>
+              <span className="bg-orange-100 text-orange-700 rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap flex-shrink-0">
                 {group.visits.length} {pluralizeObrashenie(group.visits.length)}
               </span>
+            </div>
+            <div className="text-xs text-gray-500 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="break-words">{group.location || "адрес не указан"}</span>
+              <span className="font-medium text-polair-blue">{group.executor || "—"}</span>
             </div>
           </button>
         ))}
@@ -87,28 +89,30 @@ function RepeatDetailModal({ group, onClose }) {
         </div>
 
         <div className="px-5 py-4">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-gray-400 text-left">
-                <th className="pb-2 pr-2">№ заявки</th>
-                <th className="pb-2 pr-2">Дата принятия</th>
-                <th className="pb-2 pr-2">Дата выполнения</th>
-                <th className="pb-2 pr-2">Неисправность</th>
-                <th className="pb-2">Статус</th>
-              </tr>
-            </thead>
-            <tbody>
-              {group.visits.map((v, i) => (
-                <tr key={i} className="border-t border-gray-100">
-                  <td className="py-2 pr-2 font-medium text-gray-700">{v.ticketNumber || "—"}</td>
-                  <td className="py-2 pr-2 text-gray-600">{v.dateReceived || "—"}</td>
-                  <td className="py-2 pr-2 text-gray-600">{v.dateDone || "—"}</td>
-                  <td className="py-2 pr-2 text-gray-600">{v.malfunction || "—"}</td>
-                  <td className="py-2 text-gray-600">{v.status || "—"}</td>
+          <div className="overflow-x-auto -mx-5 px-5">
+            <table className="w-full text-xs min-w-[480px]">
+              <thead>
+                <tr className="text-gray-400 text-left">
+                  <th className="pb-2 pr-2">№ заявки</th>
+                  <th className="pb-2 pr-2">Дата принятия</th>
+                  <th className="pb-2 pr-2">Дата выполнения</th>
+                  <th className="pb-2 pr-2">Неисправность</th>
+                  <th className="pb-2">Статус</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {group.visits.map((v, i) => (
+                  <tr key={i} className="border-t border-gray-100">
+                    <td className="py-2 pr-2 font-medium text-gray-700 whitespace-nowrap">{v.ticketNumber || "—"}</td>
+                    <td className="py-2 pr-2 text-gray-600 whitespace-nowrap">{v.dateReceived || "—"}</td>
+                    <td className="py-2 pr-2 text-gray-600 whitespace-nowrap">{v.dateDone || "—"}</td>
+                    <td className="py-2 pr-2 text-gray-600">{v.malfunction || "—"}</td>
+                    <td className="py-2 text-gray-600 whitespace-nowrap">{v.status || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           {group.visits.length > 1 && (
             <p className="text-xs text-gray-400 mt-3">
               Предыдущий выезд: {group.visits[1].dateReceived || "—"}

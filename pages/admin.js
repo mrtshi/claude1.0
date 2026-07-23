@@ -34,6 +34,7 @@ export default function AdminPage() {
   const [executor, setExecutor] = useState("");
   const [period, setPeriod] = useState("");
   const [dailyPeriod, setDailyPeriod] = useState("7d");
+  const [drillMonth, setDrillMonth] = useState(null);
   const [tab, setTab] = useState("overview");
   const [loadingStats, setLoadingStats] = useState(false);
   const [statusError, setStatusError] = useState("");
@@ -70,6 +71,7 @@ export default function AdminPage() {
       if (executor) params.append("executor", executor);
       if (period) params.append("period", period);
       params.append("dailyPeriod", dailyPeriod);
+      if (drillMonth) params.append("drillMonth", drillMonth);
       const res = await fetch(`/api/admin/stats?${params.toString()}`);
       if (res.status === 401) {
         setAuthenticated(false);
@@ -91,7 +93,7 @@ export default function AdminPage() {
     } finally {
       setLoadingStats(false);
     }
-  }, [executor, period, dailyPeriod]);
+  }, [executor, period, dailyPeriod, drillMonth]);
 
   // On mount, check whether we already have a valid session cookie
   // before showing either the login screen or the dashboard.
@@ -328,7 +330,7 @@ export default function AdminPage() {
                   <p className="text-sm text-gray-400">Загрузка...</p>
                 ) : stats?.executorStats ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <StatBox label="Кол-во заявок" value={stats.executorStats.totalTickets} />
+                    <StatBox label="Уникальных заявок" value={stats.executorStats.totalTickets} />
                     <div>
                       <p className="text-xs text-gray-400 mb-1">По статусам</p>
                       <div className="flex flex-col gap-1">
@@ -357,8 +359,15 @@ export default function AdminPage() {
               {stats && (
                 <DailyChart
                   data={stats.daily || []}
+                  chartMode={stats.chartMode}
+                  drillMonthLabel={stats.drillMonthLabel}
                   period={dailyPeriod}
-                  onPeriodChange={setDailyPeriod}
+                  onPeriodChange={(newPeriod) => {
+                    setDrillMonth(null);
+                    setDailyPeriod(newPeriod);
+                  }}
+                  onDrillMonth={(monthNum) => setDrillMonth(monthNum)}
+                  onBackToMonths={() => setDrillMonth(null)}
                 />
               )}
             </div>

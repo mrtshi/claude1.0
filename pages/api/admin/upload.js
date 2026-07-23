@@ -1,6 +1,7 @@
 import { readStore, writeStoreWithMeta, getReportKey } from "../../../lib/store";
 import { parseWorkbook } from "../../../lib/parseReport";
 import { requireAdminSession } from "../../../lib/adminAuth";
+import { dedupeByTicket } from "../../../lib/dataUtils";
 import formidable from "formidable";
 import fs from "fs";
 
@@ -70,6 +71,7 @@ export default async function handler(req, res) {
       success: true,
       fileName: store.reports[reportKey].fileName,
       rowCount: rows.length,
+      uniqueTicketCount: dedupeByTicket(rows).length,
       warning: usingDurableStorage
         ? null
         : "Данные сохранены только во временную память сервера — постоянное хранилище (Vercel Blob) сейчас недоступно. Отчёт может пропасть при перезапуске сервера. Проверьте подключение Blob в панели администратора.",

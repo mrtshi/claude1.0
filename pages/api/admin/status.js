@@ -1,5 +1,6 @@
 import { readStoreWithMeta } from "../../../lib/store";
 import { requireAdminSession } from "../../../lib/adminAuth";
+import { dedupeByTicket } from "../../../lib/dataUtils";
 
 export default async function handler(req, res) {
   if (requireAdminSession(req, res)) return;
@@ -9,6 +10,7 @@ export default async function handler(req, res) {
     fileName: r.fileName,
     uploadedAt: r.uploadedAt,
     rowCount: r.rows ? r.rows.length : 0,
+    uniqueTicketCount: r.rows ? dedupeByTicket(r.rows).length : 0,
   });
 
   return res.status(200).json({

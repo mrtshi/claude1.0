@@ -9,7 +9,7 @@ const PERIOD_OPTIONS = [
   { value: "2024", label: "2024 год" },
 ];
 
-function ChartBody({ data, height, tickInterval }) {
+function ChartBody({ data, height, tickInterval, onBarClick, clickable }) {
   return (
     <div className="w-full min-w-0" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%" debounce={50}>
@@ -23,9 +23,15 @@ function ChartBody({ data, height, tickInterval }) {
           <YAxis tick={{ fontSize: 11 }} allowDecimals={false} width={30} />
           <Tooltip
             contentStyle={{ fontSize: 12, borderRadius: 8 }}
-            labelFormatter={(label) => `Дата: ${label}`}
+            labelFormatter={(label) => label}
           />
-          <Bar dataKey="count" fill="#0b5ed7" radius={[4, 4, 0, 0]} />
+          <Bar
+            dataKey="count"
+            fill="#0b5ed7"
+            radius={[4, 4, 0, 0]}
+            cursor={clickable ? "pointer" : "default"}
+            onClick={clickable ? (entry) => onBarClick?.(entry) : undefined}
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -51,7 +57,17 @@ function PeriodSelect({ period, onPeriodChange, className }) {
   );
 }
 
-export default function DailyChart({ data, period, onPeriodChange }) {
+const YEAR_PERIODS = new Set(["2026", "2025", "2024"]);
+
+export default function DailyChart({
+  data,
+  chartMode,
+  drillMonthLabel,
+  period,
+  onPeriodChange,
+  onDrillMonth,
+  onBackToMonths,
+}) {
   const [expanded, setExpanded] = useState(false);
 
   const maxItem = data.reduce(
@@ -59,15 +75,44 @@ export default function DailyChart({ data, period, onPeriodChange }) {
     { count: -1, date: null }
   );
 
+  const isMonthlyView = chartMode === "monthly";
+  const isDrilledIntoMonth = chartMode === "daily" && YEAR_PERIODS.has(period) && drillMonthLabel;
+
   const compactTickInterval = data.length > 15 ? Math.floor(data.length / 8) : 0;
   const expandedTickInterval = data.length > 40 ? Math.floor(data.length / 20) : 0;
+
+  function handleBarClick(entry) {
+    if (isMonthlyView && entry && entry.month) {
+      onDrillMonth?.(entry.month);
+    }
+  }
+
+  const title = isDrilledIntoMonth
+    ? `Заявки по дням — ${drillMonthLabel}`
+    : isMonthlyView
+    ? "Заявки по месяцам"
+    : "Заявки по дням";
 
   return (
     <>
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 flex flex-col gap-3 min-w-0 overflow-hidden">
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <h3 className="font-semibold text-gray-800 text-sm">Заявки по дням</h3>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            {isDrilledIntoMonth && (
+              <button
+                onClick={() => onBackToMonths?.()}
+                title="Назад к месяцам"
+                aria-label="Назад к месяцам"
+                className="text-gray-400 hover:text-polair-blue transition-colors p-1 -ml-1 rounded-md hover:bg-polair-light flex-shrink-0"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+            )}
+            <h3 className="font-semibold text-gray-800 text-sm truncate">{title}</h3>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
             <PeriodSelect period={period} onPeriodChange={onPeriodChange} />
             <button
               onClick={() => setExpanded(true)}
@@ -95,10 +140,20 @@ export default function DailyChart({ data, period, onPeriodChange }) {
           </div>
         </div>
 
+        {isMonthlyView && (
+          <p className="text-[11px] text-gray-400 -mt-1">Нажмите на месяц, чтобы увидеть заявки по дням</p>
+        )}
+
         {data.length === 0 ? (
           <div className="text-xs text-gray-400 italic py-8 text-center">Нет данных за выбранный период</div>
         ) : (
-          <ChartBody data={data} height={180} tickInterval={compactTickInterval} />
+          <ChartBody
+            data={data}
+            height={180}
+            tickInterval={compactTickInterval}
+            clickable={isMonthlyView}
+            onBarClick={handleBarClick}
+          />
         )}
 
         {maxItem.date && (
@@ -120,8 +175,21 @@ export default function DailyChart({ data, period, onPeriodChange }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3 mb-4">
-              <h3 className="font-semibold text-gray-800 text-lg">Заявки по дням</h3>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                {isDrilledIntoMonth && (
+                  <button
+                    onClick={() => onBackToMonths?.()}
+                    className="text-gray-400 hover:text-polair-blue transition-colors p-1 rounded-md hover:bg-polair-light flex-shrink-0"
+                    aria-label="Назад к месяцам"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                  </button>
+                )}
+                <h3 className="font-semibold text-gray-800 text-lg truncate">{title}</h3>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
                 <PeriodSelect
                   period={period}
                   onPeriodChange={onPeriodChange}
@@ -137,12 +205,24 @@ export default function DailyChart({ data, period, onPeriodChange }) {
               </div>
             </div>
 
+            {isMonthlyView && (
+              <p className="text-xs text-gray-400 -mt-2 mb-3">Нажмите на месяц, чтобы увидеть заявки по дням</p>
+            )}
+
             {data.length === 0 ? (
               <div className="text-sm text-gray-400 italic py-16 text-center">
                 Нет данных за выбранный период
               </div>
             ) : (
-              <ChartBody data={data} height={420} tickInterval={expandedTickInterval} />
+              <ChartBody
+                data={data}
+                height={420}
+                tickInterval={expandedTickInterval}
+                clickable={isMonthlyView}
+                onBarClick={(entry) => {
+                  handleBarClick(entry);
+                }}
+              />
             )}
 
             {maxItem.date && (

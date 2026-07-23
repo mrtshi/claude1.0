@@ -28,11 +28,11 @@ export default function UploadCard({ title, reportKey, status, onChanged }) {
         setMessage(data.error || "Ошибка загрузки файла");
       } else if (data.warning) {
         setMessageType("warning");
-        setMessage(`Загружено строк: ${data.rowCount}. ${data.warning}`);
+        setMessage(`Уникальных заявок: ${data.uniqueTicketCount}. ${data.warning}`);
         onChanged?.();
       } else {
         setMessageType("success");
-        setMessage(`Загружено строк: ${data.rowCount}`);
+        setMessage(`Уникальных заявок: ${data.uniqueTicketCount}`);
         onChanged?.();
       }
     } catch (err) {
@@ -70,7 +70,7 @@ export default function UploadCard({ title, reportKey, status, onChanged }) {
         <div className="text-sm bg-polair-light rounded-lg px-3 py-2 flex flex-col gap-1">
           <span className="text-gray-700 font-medium truncate">{status.fileName}</span>
           <span className="text-gray-500 text-xs">
-            Строк: {status.rowCount} · Загружен:{" "}
+            Уникальных заявок: {status.uniqueTicketCount} · Загружен:{" "}
             {status.uploadedAt ? new Date(status.uploadedAt).toLocaleString("ru-RU") : "—"}
           </span>
         </div>
