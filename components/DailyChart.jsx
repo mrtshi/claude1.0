@@ -9,30 +9,53 @@ const PERIOD_OPTIONS = [
   { value: "2024", label: "2024 год" },
 ];
 
-function ChartBody({ data, height, tickInterval, onBarClick, clickable }) {
-  // Compute a Y-axis width wide enough for the largest number shown,
-  // so labels like "1000" or "1500" aren't clipped or hidden. Recharts
-  // doesn't do this automatically — a fixed narrow width caused big
-  // numbers (e.g. monthly totals in the thousands) to not render.
-  const maxCount = data.reduce((max, d) => Math.max(max, d.count || 0), 0);
-  const digitCount = String(maxCount).length;
-  const yAxisWidth = Math.max(30, digitCount * 9 + 12);
+function CustomYAxisTick({ x, y, payload }) {
+  return (
+    <text
+      x={x}
+      y={y}
+      dy={4}
+      textAnchor="end"
+      fontSize={11}
+      fill="#4b5563"
+      fontFamily="inherit"
+    >
+      {payload.value}
+    </text>
+  );
+}
 
+function CustomXAxisTick({ x, y, payload }) {
+  return (
+    <text
+      x={x}
+      y={y}
+      dy={12}
+      textAnchor="middle"
+      fontSize={11}
+      fill="#4b5563"
+      fontFamily="inherit"
+    >
+      {payload.value}
+    </text>
+  );
+}
+
+function ChartBody({ data, height, tickInterval, onBarClick, clickable, chartKey }) {
   return (
     <div className="w-full min-w-0" style={{ height }}>
-      <ResponsiveContainer width="100%" height="100%" debounce={50}>
-        <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+      <ResponsiveContainer key={chartKey} width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 12, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eef1f6" />
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 11 }}
             interval={tickInterval}
+            tick={<CustomXAxisTick />}
           />
           <YAxis
-            tick={{ fontSize: 11 }}
             allowDecimals={false}
-            width={yAxisWidth}
-            tickCount={6}
+            width={50}
+            tick={<CustomYAxisTick />}
           />
           <Tooltip
             contentStyle={{ fontSize: 12, borderRadius: 8 }}
@@ -166,6 +189,7 @@ export default function DailyChart({
             tickInterval={compactTickInterval}
             clickable={isMonthlyView}
             onBarClick={handleBarClick}
+            chartKey={`compact-${chartMode}-${period}-${drillMonthLabel || ""}`}
           />
         )}
 
@@ -235,6 +259,7 @@ export default function DailyChart({
                 onBarClick={(entry) => {
                   handleBarClick(entry);
                 }}
+                chartKey={`expanded-${chartMode}-${period}-${drillMonthLabel || ""}`}
               />
             )}
 

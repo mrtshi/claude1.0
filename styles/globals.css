@@ -21,3 +21,17 @@ html, body {
   background: #c9d6e8;
   border-radius: 4px;
 }
+
+/* Ensure chart axis/tick text from recharts is always visible. Some
+   global resets or unexpected cascade interactions can end up with
+   zero opacity/visibility on SVG <text> elements; force it back. */
+.recharts-wrapper text {
+  fill: #4b5563;
+  opacity: 1;
+  visibility: visible;
+}
+.recharts-cartesian-axis-tick text {
+  fill: #4b5563 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
