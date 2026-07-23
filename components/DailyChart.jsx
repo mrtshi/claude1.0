@@ -41,7 +41,7 @@ function CustomXAxisTick({ x, y, payload }) {
   );
 }
 
-function ChartBody({ data, height, tickInterval, onBarClick, clickable, chartKey }) {
+function ChartBody({ data, height, tickInterval, onBarClick, clickable, chartKey, showXLabels }) {
   return (
     <div className="w-full min-w-0" style={{ height }}>
       <ResponsiveContainer key={chartKey} width="100%" height="100%">
@@ -50,7 +50,7 @@ function ChartBody({ data, height, tickInterval, onBarClick, clickable, chartKey
           <XAxis
             dataKey="date"
             interval={tickInterval}
-            tick={<CustomXAxisTick />}
+            tick={showXLabels ? <CustomXAxisTick /> : false}
           />
           <YAxis
             allowDecimals={false}
@@ -190,6 +190,7 @@ export default function DailyChart({
             clickable={isMonthlyView}
             onBarClick={handleBarClick}
             chartKey={`compact-${chartMode}-${period}-${drillMonthLabel || ""}`}
+            showXLabels={false}
           />
         )}
 
@@ -260,6 +261,7 @@ export default function DailyChart({
                   handleBarClick(entry);
                 }}
                 chartKey={`expanded-${chartMode}-${period}-${drillMonthLabel || ""}`}
+                showXLabels={true}
               />
             )}
 
