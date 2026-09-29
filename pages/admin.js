@@ -6,7 +6,6 @@ import UploadCard from "../components/UploadCard";
 import DailyChart from "../components/DailyChart";
 import RepeatTickets from "../components/RepeatTickets";
 import AdvancedSearch from "../components/AdvancedSearch";
-import RepairDurationStats from "../components/RepairDurationStats";
 
 const PERIOD_OPTIONS = [
   { value: "", label: "Все время" },
@@ -19,7 +18,6 @@ const PERIOD_OPTIONS = [
 
 const TABS = [
   { key: "overview", label: "Обзор и исполнители" },
-  { key: "duration", label: "Сроки ремонта" },
   { key: "search", label: "Поиск по столбцам" },
   { key: "repeats", label: "Повторные заявки" },
 ];
@@ -375,8 +373,6 @@ export default function AdminPage() {
             </div>
           </div>
         )}
-
-        {tab === "duration" && <RepairDurationStats />}
 
         {tab === "search" && <AdvancedSearch />}
 
