@@ -4,6 +4,7 @@ import {
   getAllRows,
   getExecutorList,
   getExecutorStats,
+  getTopExecutorsByCount,
   getDailyCounts,
   getMonthlyCounts,
   getDailyCountsForMonth,
@@ -31,6 +32,7 @@ export default async function handler(req, res) {
   }
 
   const executorStats = getExecutorStats(effectiveRows, executor || null);
+  const topExecutorsByCount = getTopExecutorsByCount(effectiveRows, 10);
 
   const dPeriod = dailyPeriod || "7d";
   const year = YEAR_PERIODS[dPeriod];
@@ -70,6 +72,7 @@ export default async function handler(req, res) {
       totalSum: executorStats.totalSum,
       statusCounts: executorStats.statusCounts,
     },
+    topExecutorsByCount,
     daily,
     chartMode,
     drillMonthLabel,

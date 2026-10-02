@@ -350,6 +350,30 @@ export default function AdminPage() {
                 ) : null}
               </div>
 
+              {stats?.topExecutorsByCount && stats.topExecutorsByCount.length > 0 && (
+                <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+                  <h3 className="font-semibold text-gray-800 mb-1">Топ исполнителей</h3>
+                  <p className="text-xs text-gray-400 mb-4">
+                    По количеству уникальных заявок за выбранный период
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {stats.topExecutorsByCount.map((e, i) => (
+                      <div key={e.executor + i} className="flex items-center gap-3">
+                        <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-right">
+                          {i + 1}
+                        </span>
+                        <span className="text-sm text-gray-700 flex-1 min-w-0 truncate">
+                          {e.executor}
+                        </span>
+                        <span className="text-sm font-semibold text-polair-dark flex-shrink-0">
+                          {e.count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {stats && (
                 <div className="text-xs text-gray-400">
                   Всего строк загружено в систему: {stats.totalRowsLoaded}
