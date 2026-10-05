@@ -8,15 +8,6 @@ import RepeatTickets from "../components/RepeatTickets";
 import AdvancedSearch from "../components/AdvancedSearch";
 import RepairDurationStats from "../components/RepairDurationStats";
 
-const PERIOD_OPTIONS = [
-  { value: "", label: "Все время" },
-  { value: "7d", label: "7 дней" },
-  { value: "30d", label: "30 дней" },
-  { value: "2026", label: "2026 год" },
-  { value: "2025", label: "2025 год" },
-  { value: "2024", label: "2024 год" },
-];
-
 const TABS = [
   { key: "overview", label: "Обзор и исполнители" },
   { key: "duration", label: "Сроки ремонта" },
@@ -34,7 +25,8 @@ export default function AdminPage() {
   const [status, setStatus] = useState(null);
   const [stats, setStats] = useState(null);
   const [executor, setExecutor] = useState("");
-  const [period, setPeriod] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [dailyPeriod, setDailyPeriod] = useState("7d");
   const [drillMonth, setDrillMonth] = useState(null);
   const [tab, setTab] = useState("overview");
@@ -71,7 +63,8 @@ export default function AdminPage() {
     try {
       const params = new URLSearchParams();
       if (executor) params.append("executor", executor);
-      if (period) params.append("period", period);
+      if (startDate) params.append("startDate", startDate);
+      if (endDate) params.append("endDate", endDate);
       params.append("dailyPeriod", dailyPeriod);
       if (drillMonth) params.append("drillMonth", drillMonth);
       const res = await fetch(`/api/admin/stats?${params.toString()}`);
@@ -95,7 +88,7 @@ export default function AdminPage() {
     } finally {
       setLoadingStats(false);
     }
-  }, [executor, period, dailyPeriod, drillMonth]);
+  }, [executor, startDate, endDate, dailyPeriod, drillMonth]);
 
   // On mount, check whether we already have a valid session cookie
   // before showing either the login screen or the dashboard.
@@ -302,11 +295,11 @@ export default function AdminPage() {
             <div className="lg:col-span-2 flex flex-col gap-6 min-w-0">
               <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
                 <h3 className="font-semibold text-gray-800 mb-4">Статистика по исполнителю</h3>
-                <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <div className="flex flex-col sm:flex-row gap-3 mb-4 flex-wrap">
                   <select
                     value={executor}
                     onChange={(e) => setExecutor(e.target.value)}
-                    className="w-full sm:flex-1 sm:min-w-0 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-polair-blue"
+                    className="w-full sm:flex-1 sm:min-w-[180px] border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-polair-blue"
                   >
                     <option value="">Все исполнители</option>
                     {stats?.executors?.map((ex) => (
@@ -315,17 +308,34 @@ export default function AdminPage() {
                       </option>
                     ))}
                   </select>
-                  <select
-                    value={period}
-                    onChange={(e) => setPeriod(e.target.value)}
-                    className="w-full sm:w-auto sm:flex-shrink-0 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-polair-blue"
-                  >
-                    {PERIOD_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-polair-blue"
+                      aria-label="Начало периода"
+                    />
+                    <span className="text-gray-400 text-sm">—</span>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-polair-blue"
+                      aria-label="Конец периода"
+                    />
+                    {(startDate || endDate) && (
+                      <button
+                        onClick={() => {
+                          setStartDate("");
+                          setEndDate("");
+                        }}
+                        className="text-xs text-gray-400 hover:text-gray-600 underline whitespace-nowrap"
+                      >
+                        Сбросить
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {loadingStats ? (

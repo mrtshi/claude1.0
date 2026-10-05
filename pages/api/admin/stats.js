@@ -21,13 +21,14 @@ export default async function handler(req, res) {
   const store = await readStore();
   const rows = getAllRows(store);
 
-  const { executor, period, dailyPeriod, drillMonth } = req.query;
+  const { executor, startDate, endDate, dailyPeriod, drillMonth } = req.query;
 
   const executors = getExecutorList(rows);
 
   let effectiveRows = rows;
-  if (period) {
-    const { start, end } = getPeriodRange(period);
+  if (startDate || endDate) {
+    const start = startDate ? new Date(startDate) : null;
+    const end = endDate ? new Date(`${endDate}T23:59:59.999`) : null;
     effectiveRows = filterByDateRange(rows, start, end);
   }
 
