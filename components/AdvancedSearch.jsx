@@ -1,20 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const FIELDS = [
-  { key: "nomenclature", label: "Номенклатура" },
-  { key: "location", label: "Местонахождение оборудования" },
+const TEXT_FIELDS = [
   { key: "serialNumber", label: "Заводской №" },
+  { key: "location", label: "Местонахождение оборудования" },
   { key: "executor", label: "Исполнитель" },
-  { key: "dateReceived", label: "Дата принятия заявки" },
-  { key: "dateDone", label: "Дата выполнения ремонта" },
-  { key: "status", label: "Статус заявки в Фениксе" },
 ];
 
 export default function AdvancedSearch() {
   const [filters, setFilters] = useState({});
+  const [statuses, setStatuses] = useState([]);
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/statuses");
+        if (!res.ok) return;
+        const data = await res.json();
+        setStatuses(data.statuses || []);
+      } catch (e) {
+        console.error("Failed to load statuses", e);
+      }
+    })();
+  }, []);
 
   function updateFilter(key, value) {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -46,8 +56,8 @@ export default function AdvancedSearch() {
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 flex flex-col gap-4">
       <h3 className="font-semibold text-gray-800">Поиск по столбцам</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {FIELDS.map((f) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {TEXT_FIELDS.map((f) => (
           <div key={f.key} className="flex flex-col gap-1">
             <label className="text-xs text-gray-500">{f.label}</label>
             <input
@@ -59,6 +69,21 @@ export default function AdvancedSearch() {
             />
           </div>
         ))}
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-gray-500">Статус заявки в Фениксе</label>
+          <select
+            value={filters.status || ""}
+            onChange={(e) => updateFilter("status", e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-polair-blue"
+          >
+            <option value="">Любой статус</option>
+            {statuses.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       <button
         onClick={handleSearch}
@@ -79,12 +104,9 @@ export default function AdvancedSearch() {
                 <thead>
                   <tr className="text-gray-400 text-left border-b border-gray-200">
                     <th className="py-2 pr-3">№ заявки</th>
-                    <th className="py-2 pr-3">Номенклатура</th>
                     <th className="py-2 pr-3">Зав. №</th>
                     <th className="py-2 pr-3">Местонахождение</th>
                     <th className="py-2 pr-3">Исполнитель</th>
-                    <th className="py-2 pr-3">Дата принятия</th>
-                    <th className="py-2 pr-3">Дата выполнения</th>
                     <th className="py-2">Статус</th>
                   </tr>
                 </thead>
@@ -92,12 +114,9 @@ export default function AdvancedSearch() {
                   {results.slice(0, 200).map((r, i) => (
                     <tr key={i} className="border-b border-gray-100">
                       <td className="py-2 pr-3 font-medium text-gray-700">{r.ticketNumber}</td>
-                      <td className="py-2 pr-3 text-gray-600">{r.nomenclature}</td>
                       <td className="py-2 pr-3 text-gray-600">{r.serialNumber}</td>
                       <td className="py-2 pr-3 text-gray-600">{r.location}</td>
                       <td className="py-2 pr-3 text-gray-600">{r.executor}</td>
-                      <td className="py-2 pr-3 text-gray-600">{r.dateReceived}</td>
-                      <td className="py-2 pr-3 text-gray-600">{r.dateDone}</td>
                       <td className="py-2 text-gray-600">{r.status}</td>
                     </tr>
                   ))}

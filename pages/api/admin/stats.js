@@ -71,6 +71,7 @@ export default async function handler(req, res) {
     executorStats: {
       totalTickets: executorStats.totalTickets,
       totalSum: executorStats.totalSum,
+      averageCheck: executorStats.averageCheck,
       statusCounts: executorStats.statusCounts,
     },
     topExecutorsByCount,

@@ -15,6 +15,15 @@ const TABS = [
   { key: "repeats", label: "Повторные заявки" },
 ];
 
+// Converts an HTML date input value (YYYY-MM-DD) to Russian dd.mm.yyyy
+// display format. Returns empty string for empty input.
+function formatRuDate(isoDate) {
+  if (!isoDate) return "";
+  const [y, m, d] = isoDate.split("-");
+  if (!y || !m || !d) return isoDate;
+  return `${d}.${m}.${y}`;
+}
+
 export default function AdminPage() {
   const [authChecked, setAuthChecked] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
@@ -391,7 +400,7 @@ export default function AdminPage() {
               )}
             </div>
 
-            <div className="lg:col-span-1 min-w-0">
+            <div className="lg:col-span-1 min-w-0 flex flex-col gap-6">
               {stats && (
                 <DailyChart
                   data={stats.daily || []}
@@ -405,6 +414,24 @@ export default function AdminPage() {
                   onDrillMonth={(monthNum) => setDrillMonth(monthNum)}
                   onBackToMonths={() => setDrillMonth(null)}
                 />
+              )}
+
+              {stats?.executorStats && (
+                <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+                  <h3 className="font-semibold text-gray-800 text-sm mb-1">Средний чек</h3>
+                  <p className="text-[11px] text-gray-400 mb-3">
+                    {startDate || endDate
+                      ? `За период ${formatRuDate(startDate) || "…"} — ${formatRuDate(endDate) || "…"}`
+                      : "За всё время"}
+                  </p>
+                  {stats.executorStats.averageCheck !== null ? (
+                    <p className="text-2xl font-bold text-polair-dark">
+                      {stats.executorStats.averageCheck.toLocaleString("ru-RU")} ₽
+                    </p>
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">Нет данных за выбранный период</p>
+                  )}
+                </div>
               )}
             </div>
           </div>

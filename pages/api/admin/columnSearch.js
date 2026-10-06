@@ -2,15 +2,7 @@ import { readStore } from "../../../lib/store";
 import { requireAdminSession } from "../../../lib/adminAuth";
 import { getAllRows, advancedSearch, dedupeByTicket } from "../../../lib/dataUtils";
 
-const ALLOWED_FIELDS = [
-  "nomenclature",
-  "location",
-  "serialNumber",
-  "executor",
-  "dateReceived",
-  "dateDone",
-  "status",
-];
+const ALLOWED_FIELDS = ["serialNumber", "location", "executor", "status"];
 
 export default async function handler(req, res) {
   if (requireAdminSession(req, res)) return;
