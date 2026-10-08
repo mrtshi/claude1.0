@@ -3,12 +3,12 @@ import { useState, useEffect } from "react";
 const TEXT_FIELDS = [
   { key: "serialNumber", label: "Заводской №" },
   { key: "location", label: "Местонахождение оборудования" },
-  { key: "executor", label: "Исполнитель" },
 ];
 
 export default function AdvancedSearch() {
   const [filters, setFilters] = useState({});
   const [statuses, setStatuses] = useState([]);
+  const [executors, setExecutors] = useState([]);
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -22,6 +22,16 @@ export default function AdvancedSearch() {
         setStatuses(data.statuses || []);
       } catch (e) {
         console.error("Failed to load statuses", e);
+      }
+    })();
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/executors");
+        if (!res.ok) return;
+        const data = await res.json();
+        setExecutors(data.executors || []);
+      } catch (e) {
+        console.error("Failed to load executors", e);
       }
     })();
   }, []);
@@ -69,6 +79,21 @@ export default function AdvancedSearch() {
             />
           </div>
         ))}
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-gray-500">Исполнитель</label>
+          <select
+            value={filters.executor || ""}
+            onChange={(e) => updateFilter("executor", e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-polair-blue"
+          >
+            <option value="">Все исполнители</option>
+            {executors.map((ex) => (
+              <option key={ex} value={ex}>
+                {ex}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-gray-500">Статус заявки в Фениксе</label>
           <select
