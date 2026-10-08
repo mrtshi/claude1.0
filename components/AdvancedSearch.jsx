@@ -63,6 +63,15 @@ export default function AdvancedSearch() {
     }
   }
 
+  function handleClear() {
+    setFilters({});
+    setResults(null);
+    setError("");
+  }
+
+  const hasActiveInput =
+    Object.values(filters).some((v) => v) || results !== null || error;
+
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 flex flex-col gap-4">
       <h3 className="font-semibold text-gray-800">Поиск по столбцам</h3>
@@ -110,13 +119,23 @@ export default function AdvancedSearch() {
           </select>
         </div>
       </div>
-      <button
-        onClick={handleSearch}
-        disabled={loading}
-        className="self-start bg-polair-blue hover:bg-polair-dark transition-colors text-white text-sm font-medium rounded-lg px-5 py-2 disabled:opacity-60"
-      >
-        {loading ? "Поиск..." : "Искать"}
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleSearch}
+          disabled={loading}
+          className="bg-polair-blue hover:bg-polair-dark transition-colors text-white text-sm font-medium rounded-lg px-5 py-2 disabled:opacity-60"
+        >
+          {loading ? "Поиск..." : "Искать"}
+        </button>
+        {hasActiveInput && (
+          <button
+            onClick={handleClear}
+            className="bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600 text-sm font-medium rounded-lg px-5 py-2"
+          >
+            Очистить
+          </button>
+        )}
+      </div>
 
       {error && <div className="text-sm text-red-600">{error}</div>}
 
