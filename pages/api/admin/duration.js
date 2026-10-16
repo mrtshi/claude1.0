@@ -10,6 +10,7 @@ import {
 } from "../../../lib/dataUtils";
 
 const TOP_LONGEST_LIMIT = 10;
+const TOP_EXECUTORS_LIMIT = 10;
 
 export default async function handler(req, res) {
   if (requireAdminSession(req, res)) return;
@@ -27,7 +28,7 @@ export default async function handler(req, res) {
   }
 
   const durationStats = getRepairDurationStats(effectiveRows, executor || null);
-  const executorRanking = getExecutorDurationRanking(effectiveRows);
+  const executorRanking = getExecutorDurationRanking(effectiveRows).slice(0, TOP_EXECUTORS_LIMIT);
   const topLongest = getTopLongestTickets(effectiveRows, TOP_LONGEST_LIMIT, executor || null);
   const executors = getExecutorList(rows);
 

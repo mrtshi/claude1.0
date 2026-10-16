@@ -260,10 +260,10 @@ export default function RepairDurationStats() {
 
       {data?.executorRanking && data.executorRanking.length > 0 && (
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-          <h3 className="font-semibold text-gray-800 mb-1">Средний срок по исполнителям</h3>
+          <h3 className="font-semibold text-gray-800 mb-1">Топ-10 исполнителей по скорости</h3>
           <p className="text-xs text-gray-400 mb-4">
-            От самого быстрого к самому медленному. Нажмите на исполнителя, чтобы увидеть его
-            самые долгие заявки
+            За выбранный период, от самого быстрого к самому медленному. Нажмите на
+            исполнителя, чтобы увидеть его самые долгие заявки
           </p>
           <div className="overflow-x-auto -mx-5">
             <div className="px-5">
