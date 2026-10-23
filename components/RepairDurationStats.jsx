@@ -31,6 +31,7 @@ export default function RepairDurationStats() {
   const [drillExecutor, setDrillExecutor] = useState(null);
   const [drillLoading, setDrillLoading] = useState(false);
   const [drillTickets, setDrillTickets] = useState(null);
+  const [issueListMode, setIssueListMode] = useState(null); // "notCompleted" | "invalid" | null
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -174,16 +175,22 @@ export default function RepairDurationStats() {
                 <span className="font-semibold text-gray-700">{stats.ticketsWithDuration}</span>
               </span>
               {stats.notCompletedCount > 0 && (
-                <span>
+                <button
+                  onClick={() => setIssueListMode("notCompleted")}
+                  className="text-polair-blue hover:underline cursor-pointer"
+                >
                   Ещё не выполнено (нет даты выполнения):{" "}
-                  <span className="font-semibold text-gray-700">{stats.notCompletedCount}</span>
-                </span>
+                  <span className="font-semibold">{stats.notCompletedCount}</span>
+                </button>
               )}
               {stats.invalidCount > 0 && (
-                <span>
+                <button
+                  onClick={() => setIssueListMode("invalid")}
+                  className="text-polair-blue hover:underline cursor-pointer"
+                >
                   Некорректные даты:{" "}
-                  <span className="font-semibold text-gray-700">{stats.invalidCount}</span>
-                </span>
+                  <span className="font-semibold">{stats.invalidCount}</span>
+                </button>
               )}
             </div>
 
@@ -304,6 +311,22 @@ export default function RepairDurationStats() {
           onClose={() => setDrillExecutor(null)}
         />
       )}
+
+      {issueListMode && (
+        <IssueListModal
+          title={
+            issueListMode === "notCompleted"
+              ? "Ещё не выполнено (нет даты выполнения)"
+              : "Некорректные даты"
+          }
+          tickets={
+            issueListMode === "notCompleted"
+              ? stats?.notCompletedTickets
+              : stats?.invalidTickets
+          }
+          onClose={() => setIssueListMode(null)}
+        />
+      )}
     </div>
   );
 }
@@ -322,6 +345,71 @@ function StatBox({ label, value, severity }) {
       <p className={`text-xl font-bold ${severity ? SEVERITY_TEXT_COLOR[severity] : "text-polair-dark"}`}>
         {value}
       </p>
+    </div>
+  );
+}
+
+function IssueListModal({ title, tickets, onClose }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[85vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-5 py-4 flex items-start justify-between gap-3">
+          <div>
+            <h3 className="font-semibold text-gray-800">{title}</h3>
+            <p className="text-xs text-gray-500 mt-1">
+              Заявки за выбранный период и исполнителя, не вошедшие в расчёт сроков
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-xl leading-none px-1"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="px-5 py-4">
+          {(!tickets || tickets.length === 0) && (
+            <p className="text-sm text-gray-400 italic">Нет заявок в этой категории</p>
+          )}
+
+          {tickets && tickets.length > 0 && (
+            <div className="overflow-x-auto -mx-5 px-5">
+              <table className="w-full text-xs min-w-[560px]">
+                <thead>
+                  <tr className="text-gray-400 text-left">
+                    <th className="pb-2 pr-2">№ заявки</th>
+                    <th className="pb-2 pr-2">Номенклатура</th>
+                    <th className="pb-2 pr-2">Исполнитель</th>
+                    <th className="pb-2 pr-2">Дата принятия</th>
+                    <th className="pb-2 pr-2">Дата выполнения</th>
+                    <th className="pb-2">Статус</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tickets.map((t, i) => (
+                    <tr key={(t.ticketNumber || "") + i} className="border-t border-gray-100">
+                      <td className="py-2 pr-2 font-medium text-gray-700 whitespace-nowrap">{t.ticketNumber || "—"}</td>
+                      <td className="py-2 pr-2 text-gray-600">{t.nomenclature || "—"}</td>
+                      <td className="py-2 pr-2 text-gray-600 whitespace-nowrap">{t.executor || "—"}</td>
+                      <td className="py-2 pr-2 text-gray-600 whitespace-nowrap">{t.dateReceived || "—"}</td>
+                      <td className="py-2 pr-2 text-gray-600 whitespace-nowrap">{t.dateDone || "—"}</td>
+                      <td className="py-2 text-gray-600 whitespace-nowrap">{t.status || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
