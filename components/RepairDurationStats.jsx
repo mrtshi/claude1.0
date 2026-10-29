@@ -31,7 +31,7 @@ export default function RepairDurationStats() {
   const [drillExecutor, setDrillExecutor] = useState(null);
   const [drillLoading, setDrillLoading] = useState(false);
   const [drillTickets, setDrillTickets] = useState(null);
-  const [issueListMode, setIssueListMode] = useState(null); // "notCompleted" | "invalid" | null
+  const [showInvalidList, setShowInvalidList] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -174,18 +174,9 @@ export default function RepairDurationStats() {
                 Учтено заявок с известным сроком:{" "}
                 <span className="font-semibold text-gray-700">{stats.ticketsWithDuration}</span>
               </span>
-              {stats.notCompletedCount > 0 && (
-                <button
-                  onClick={() => setIssueListMode("notCompleted")}
-                  className="text-polair-blue hover:underline cursor-pointer"
-                >
-                  Ещё не выполнено (нет даты выполнения):{" "}
-                  <span className="font-semibold">{stats.notCompletedCount}</span>
-                </button>
-              )}
               {stats.invalidCount > 0 && (
                 <button
-                  onClick={() => setIssueListMode("invalid")}
+                  onClick={() => setShowInvalidList(true)}
                   className="text-polair-blue hover:underline cursor-pointer"
                 >
                   Некорректные даты:{" "}
@@ -312,19 +303,11 @@ export default function RepairDurationStats() {
         />
       )}
 
-      {issueListMode && (
+      {showInvalidList && (
         <IssueListModal
-          title={
-            issueListMode === "notCompleted"
-              ? "Ещё не выполнено (нет даты выполнения)"
-              : "Некорректные даты"
-          }
-          tickets={
-            issueListMode === "notCompleted"
-              ? stats?.notCompletedTickets
-              : stats?.invalidTickets
-          }
-          onClose={() => setIssueListMode(null)}
+          title="Некорректные даты"
+          tickets={stats?.invalidTickets}
+          onClose={() => setShowInvalidList(false)}
         />
       )}
     </div>
