@@ -39,6 +39,12 @@ export default function AdminPage() {
   const [dailyPeriod, setDailyPeriod] = useState("7d");
   const [drillMonth, setDrillMonth] = useState(null);
   const [tab, setTab] = useState("overview");
+  // The "Сроки ремонта" tab keeps its own filters (dates, executor)
+  // inside the component. To stop them resetting when the user
+  // switches tabs, the component is mounted the first time the tab is
+  // opened and then kept mounted (just hidden) instead of being
+  // destroyed and recreated on every switch.
+  const [durationOpened, setDurationOpened] = useState(false);
   const [loadingStats, setLoadingStats] = useState(false);
   const [statusError, setStatusError] = useState("");
   const [statsError, setStatsError] = useState("");
@@ -287,7 +293,10 @@ export default function AdminPage() {
           {TABS.map((t) => (
             <button
               key={t.key}
-              onClick={() => setTab(t.key)}
+              onClick={() => {
+                setTab(t.key);
+                if (t.key === "duration") setDurationOpened(true);
+              }}
               className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                 tab === t.key
                   ? "border-polair-blue text-polair-blue"
@@ -437,7 +446,11 @@ export default function AdminPage() {
           </div>
         )}
 
-        {tab === "duration" && <RepairDurationStats />}
+        {durationOpened && (
+          <div className={tab === "duration" ? "" : "hidden"}>
+            <RepairDurationStats />
+          </div>
+        )}
 
         {tab === "search" && <AdvancedSearch />}
 

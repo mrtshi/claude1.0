@@ -170,10 +170,6 @@ export default function RepairDurationStats() {
             </div>
 
             <div className="text-xs text-gray-500 flex flex-wrap gap-x-4 gap-y-1 mb-5">
-              <span>
-                Учтено заявок с известным сроком:{" "}
-                <span className="font-semibold text-gray-700">{stats.ticketsWithDuration}</span>
-              </span>
               {stats.invalidCount > 0 && (
                 <button
                   onClick={() => setShowInvalidList(true)}
@@ -260,8 +256,9 @@ export default function RepairDurationStats() {
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
           <h3 className="font-semibold text-gray-800 mb-1">Топ-10 исполнителей по скорости</h3>
           <p className="text-xs text-gray-400 mb-4">
-            За выбранный период, от самого быстрого к самому медленному. Нажмите на
-            исполнителя, чтобы увидеть его самые долгие заявки
+            За выбранный период, от самого быстрого к самому медленному. Учитываются
+            исполнители с 20 и более заявками с известным сроком. Нажмите на исполнителя,
+            чтобы увидеть его самые долгие заявки
           </p>
           <div className="overflow-x-auto -mx-5">
             <div className="px-5">
