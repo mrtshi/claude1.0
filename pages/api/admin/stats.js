@@ -27,7 +27,7 @@ export default async function handler(req, res) {
 
   let effectiveRows = rows;
   if (startDate || endDate) {
-    const start = startDate ? new Date(startDate) : null;
+    const start = startDate ? new Date(`${startDate}T00:00:00`) : null;
     const end = endDate ? new Date(`${endDate}T23:59:59.999`) : null;
     effectiveRows = filterByDateRange(rows, start, end);
   }
@@ -72,6 +72,8 @@ export default async function handler(req, res) {
       totalTickets: executorStats.totalTickets,
       totalSum: executorStats.totalSum,
       averageCheck: executorStats.averageCheck,
+      approvedCount: executorStats.approvedCount,
+      approvedSum: executorStats.approvedSum,
       statusCounts: executorStats.statusCounts,
     },
     topExecutorsByCount,

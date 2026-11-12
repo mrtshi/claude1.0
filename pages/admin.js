@@ -434,11 +434,27 @@ export default function AdminPage() {
                       : "За всё время"}
                   </p>
                   {stats.executorStats.averageCheck !== null ? (
-                    <p className="text-2xl font-bold text-polair-dark">
-                      {stats.executorStats.averageCheck.toLocaleString("ru-RU")} ₽
-                    </p>
+                    <>
+                      <p className="text-2xl font-bold text-polair-dark">
+                        {stats.executorStats.averageCheck.toLocaleString("ru-RU", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}{" "}
+                        ₽
+                      </p>
+                      <p className="text-[11px] text-gray-400 mt-2">
+                        По {stats.executorStats.approvedCount} утверждённым заявкам на сумму{" "}
+                        {stats.executorStats.approvedSum.toLocaleString("ru-RU", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}{" "}
+                        ₽
+                      </p>
+                    </>
                   ) : (
-                    <p className="text-sm text-gray-400 italic">Нет данных за выбранный период</p>
+                    <p className="text-sm text-gray-400 italic">
+                      Нет утверждённых заявок за выбранный период
+                    </p>
                   )}
                 </div>
               )}
