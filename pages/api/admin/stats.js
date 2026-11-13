@@ -5,6 +5,7 @@ import {
   getExecutorList,
   getExecutorStats,
   getTopExecutorsByCount,
+  getMonthlyAverageCheck,
   getDailyCounts,
   getMonthlyCounts,
   getDailyCountsForMonth,
@@ -34,6 +35,7 @@ export default async function handler(req, res) {
 
   const executorStats = getExecutorStats(effectiveRows, executor || null);
   const topExecutorsByCount = getTopExecutorsByCount(effectiveRows, 10);
+  const monthlyAverageCheck = getMonthlyAverageCheck(rows, executor || null);
 
   const dPeriod = dailyPeriod || "7d";
   const year = YEAR_PERIODS[dPeriod];
@@ -77,6 +79,7 @@ export default async function handler(req, res) {
       statusCounts: executorStats.statusCounts,
     },
     topExecutorsByCount,
+    monthlyAverageCheck,
     daily,
     chartMode,
     drillMonthLabel,

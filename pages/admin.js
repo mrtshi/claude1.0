@@ -458,6 +458,13 @@ export default function AdminPage() {
                   )}
                 </div>
               )}
+
+              {stats?.monthlyAverageCheck?.months?.length > 0 && (
+                <MonthlyAverageCheck
+                  data={stats.monthlyAverageCheck}
+                  executor={executor}
+                />
+              )}
             </div>
           </div>
         )}
@@ -488,6 +495,66 @@ function StatBox({ label, value }) {
     <div>
       <p className="text-xs text-gray-400 mb-1">{label}</p>
       <p className="text-xl font-bold text-polair-dark">{value ?? "—"}</p>
+    </div>
+  );
+}
+
+function fmtMoney(n) {
+  return n.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Average check for every month in the data (approved tickets only,
+// month = month of "Дата принятия заявки"). Independent of the calendar
+// period above; follows the executor filter, like the "Средний чек" box.
+function MonthlyAverageCheck({ data, executor }) {
+  const { months, total, undatedCount } = data;
+  const maxAvg = months.reduce((m, r) => Math.max(m, r.averageCheck || 0), 0);
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+      <h3 className="font-semibold text-gray-800 text-sm mb-1">Средний чек по месяцам</h3>
+      <p className="text-[11px] text-gray-400 mb-3">
+        Утверждённые заявки, месяц — по дате принятия. Не зависит от выбранного периода
+        {executor ? ` · ${executor}` : ""}
+      </p>
+
+      <div className="flex flex-col gap-2.5 max-h-[460px] overflow-y-auto pr-1">
+        {months.map((m) => (
+          <div key={m.key}>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-xs text-gray-700">{m.label}</span>
+              <span className="text-[11px] text-gray-400 flex-shrink-0">{m.count} шт.</span>
+              <span className="text-sm font-semibold text-polair-dark flex-shrink-0 w-28 text-right">
+                {m.averageCheck !== null ? `${fmtMoney(m.averageCheck)} ₽` : "—"}
+              </span>
+            </div>
+            <div className="h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
+              <div
+                className="h-full bg-polair-blue rounded-full"
+                style={{
+                  width: maxAvg && m.averageCheck ? `${(m.averageCheck / maxAvg) * 100}%` : "0%",
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {total && (
+        <div className="border-t border-gray-100 mt-3 pt-3 flex items-baseline justify-between gap-2">
+          <span className="text-xs font-medium text-gray-700">Всего</span>
+          <span className="text-[11px] text-gray-400">{total.count} шт.</span>
+          <span className="text-sm font-bold text-polair-dark w-28 text-right">
+            {total.averageCheck !== null ? `${fmtMoney(total.averageCheck)} ₽` : "—"}
+          </span>
+        </div>
+      )}
+
+      {undatedCount > 0 && (
+        <p className="text-[11px] text-amber-700 mt-2">
+          Не вошли в список: {undatedCount} утверждённых заявок без даты принятия
+        </p>
+      )}
     </div>
   );
 }
