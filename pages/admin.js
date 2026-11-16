@@ -309,6 +309,7 @@ export default function AdminPage() {
         </div>
 
         {tab === "overview" && (
+          <>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 flex flex-col gap-6 min-w-0">
               <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
@@ -467,6 +468,13 @@ export default function AdminPage() {
               )}
             </div>
           </div>
+
+          {stats?.costBreakdown?.months?.length > 0 && (
+            <div className="mt-6">
+              <CostBreakdown data={stats.costBreakdown} executor={executor} />
+            </div>
+          )}
+          </>
         )}
 
         {durationOpened && (
@@ -553,6 +561,97 @@ function MonthlyAverageCheck({ data, executor }) {
       {undatedCount > 0 && (
         <p className="text-[11px] text-amber-700 mt-2">
           Не вошли в список: {undatedCount} утверждённых заявок без даты принятия
+        </p>
+      )}
+    </div>
+  );
+}
+
+function fmtKm(n) {
+  return n.toLocaleString("ru-RU", { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+}
+
+// Cost breakdown by month (works / parts from responsible storage / own
+// parts / transport) with total mileage. Same population as the average
+// check: approved tickets, month = month of "Дата принятия заявки". The
+// "Общая стоимость" column equals the monthly sum behind the average check.
+function CostBreakdown({ data, executor }) {
+  const { months, total, hasOther, undatedCount } = data;
+
+  const columns = [
+    { key: "work", label: "Стоимость работ" },
+    { key: "storageParts", label: "Запчасти с отв. хранения" },
+    { key: "ownParts", label: "Собственные запчасти" },
+    { key: "transport", label: "Транспортные расходы" },
+    ...(hasOther ? [{ key: "other", label: "Прочее" }] : []),
+  ];
+
+  const cellCls = "py-2 pl-3 text-right whitespace-nowrap";
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+      <h3 className="font-semibold text-gray-800 mb-1">Разбивка стоимости по месяцам</h3>
+      <p className="text-xs text-gray-400 mb-4">
+        Утверждённые заявки, месяц — по дате принятия. Не зависит от выбранного периода
+        {executor ? ` · ${executor}` : ""}. «Общая стоимость» равна сумме заявок за месяц,
+        на которой строится средний чек. Пробег — километры по строкам «Тран. расходы».
+      </p>
+
+      <div className="overflow-x-auto -mx-5 px-5">
+        <table className="w-full text-xs min-w-[760px]">
+          <thead>
+            <tr className="text-gray-400 border-b border-gray-200 align-bottom">
+              <th className="py-2 pr-3 text-left font-medium">Месяц</th>
+              <th className="py-2 pl-3 text-right font-medium">Заявок</th>
+              {columns.map((c) => (
+                <th key={c.key} className="py-2 pl-3 text-right font-medium">
+                  {c.label}, ₽
+                </th>
+              ))}
+              <th className="py-2 pl-3 text-right font-medium text-gray-600">Общая стоимость, ₽</th>
+              <th className="py-2 pl-3 text-right font-medium">Пробег общий, км</th>
+            </tr>
+          </thead>
+          <tbody>
+            {months.map((m) => (
+              <tr key={m.key} className="border-b border-gray-100">
+                <td className="py-2 pr-3 text-gray-700 whitespace-nowrap">{m.label}</td>
+                <td className={`${cellCls} text-gray-500`}>{m.tickets}</td>
+                {columns.map((c) => (
+                  <td key={c.key} className={`${cellCls} text-gray-700`}>
+                    {m.tickets > 0 ? fmtMoney(m[c.key]) : "—"}
+                  </td>
+                ))}
+                <td className={`${cellCls} font-semibold text-polair-dark`}>
+                  {m.tickets > 0 ? fmtMoney(m.total) : "—"}
+                </td>
+                <td className={`${cellCls} text-gray-700`}>
+                  {m.tickets > 0 ? fmtKm(m.mileage) : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          {total && (
+            <tfoot>
+              <tr className="border-t-2 border-gray-200 font-semibold text-gray-800">
+                <td className="py-2 pr-3">Всего</td>
+                <td className={cellCls}>{total.tickets}</td>
+                {columns.map((c) => (
+                  <td key={c.key} className={cellCls}>
+                    {fmtMoney(total[c.key])}
+                  </td>
+                ))}
+                <td className={`${cellCls} text-polair-dark`}>{fmtMoney(total.total)}</td>
+                <td className={cellCls}>{fmtKm(total.mileage)}</td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
+      </div>
+
+      {undatedCount > 0 && (
+        <p className="text-[11px] text-amber-700 mt-3">
+          Не вошли в таблицу: {undatedCount} утверждённых заявок без даты принятия
         </p>
       )}
     </div>
