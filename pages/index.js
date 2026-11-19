@@ -3,8 +3,6 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import Header from "../components/Header";
 
-const ADMIN_TRIGGER = "2218";
-
 const STATUS_COLORS = {
   "утвержден": "bg-green-100 text-green-800",
   "в работе": "bg-yellow-100 text-yellow-800",
@@ -34,17 +32,22 @@ export default function Home() {
     const trimmed = query.trim();
     if (!trimmed) return;
 
-    if (trimmed === ADMIN_TRIGGER) {
-      router.push("/admin");
-      return;
-    }
-
     setLoading(true);
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`);
+      // POST, so that if the text is the admin password it travels in the
+      // request body and not in the URL (URLs end up in server logs).
+      const res = await fetch("/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ q: trimmed }),
+      });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Ничего не найдено");
+      } else if (data.admin) {
+        // The text was the admin password: the server has opened an admin
+        // session, go to the panel.
+        router.push("/admin");
       } else {
         setResults(data.results);
       }
@@ -73,7 +76,7 @@ export default function Home() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Номер заявки или серийный номер"
-            className="flex-1 border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-polair-blue focus:border-transparent"
+            className="ym-disable-keys flex-1 border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-polair-blue focus:border-transparent"
             inputMode="numeric"
           />
           <button

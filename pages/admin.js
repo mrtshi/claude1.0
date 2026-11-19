@@ -379,35 +379,13 @@ export default function AdminPage() {
                 ) : null}
               </div>
 
-              {stats?.topExecutorsByCount && stats.topExecutorsByCount.length > 0 && (
-                <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                  <h3 className="font-semibold text-gray-800 mb-1">Топ исполнителей</h3>
-                  <p className="text-xs text-gray-400 mb-4">
-                    По количеству уникальных заявок за выбранный период
-                  </p>
-                  <div className="flex flex-col gap-2">
-                    {stats.topExecutorsByCount.map((e, i) => (
-                      <div key={e.executor + i} className="flex items-center gap-3">
-                        <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-right">
-                          {i + 1}
-                        </span>
-                        <span className="text-sm text-gray-700 flex-1 min-w-0 truncate">
-                          {e.executor}
-                        </span>
-                        <span className="text-sm font-semibold text-polair-dark flex-shrink-0">
-                          {e.count}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              {stats?.monthlyAverageCheck?.months?.length > 0 && (
+                <MonthlyAverageCheck
+                  data={stats.monthlyAverageCheck}
+                  executor={executor}
+                />
               )}
 
-              {stats && (
-                <div className="text-xs text-gray-400">
-                  Всего строк загружено в систему: {stats.totalRowsLoaded}
-                </div>
-              )}
             </div>
 
             <div className="lg:col-span-1 min-w-0 flex flex-col gap-6">
@@ -460,11 +438,28 @@ export default function AdminPage() {
                 </div>
               )}
 
-              {stats?.monthlyAverageCheck?.months?.length > 0 && (
-                <MonthlyAverageCheck
-                  data={stats.monthlyAverageCheck}
-                  executor={executor}
-                />
+              {stats?.topExecutorsByCount && stats.topExecutorsByCount.length > 0 && (
+                <div className="flex-1 bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+                  <h3 className="font-semibold text-gray-800 mb-1">Топ исполнителей</h3>
+                  <p className="text-xs text-gray-400 mb-4">
+                    По количеству уникальных заявок за выбранный период
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {stats.topExecutorsByCount.map((e, i) => (
+                      <div key={e.executor + i} className="flex items-center gap-3">
+                        <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-right">
+                          {i + 1}
+                        </span>
+                        <span className="text-sm text-gray-700 flex-1 min-w-0 truncate" title={e.executor}>
+                          {e.executor}
+                        </span>
+                        <span className="text-sm font-semibold text-polair-dark flex-shrink-0">
+                          {e.count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -472,6 +467,12 @@ export default function AdminPage() {
           {stats?.costBreakdown?.months?.length > 0 && (
             <div className="mt-6">
               <CostBreakdown data={stats.costBreakdown} executor={executor} />
+            </div>
+          )}
+
+          {stats && (
+            <div className="text-xs text-gray-400 mt-4">
+              Всего строк загружено в систему: {stats.totalRowsLoaded}
             </div>
           )}
           </>
@@ -608,8 +609,8 @@ function CostBreakdown({ data, executor }) {
                   {c.label}, ₽
                 </th>
               ))}
-              <th className="py-2 pl-3 text-right font-medium text-gray-600">Общая стоимость, ₽</th>
               <th className="py-2 pl-3 text-right font-medium">Пробег общий, км</th>
+              <th className="py-2 pl-3 text-right font-medium text-gray-600">Общая стоимость, ₽</th>
             </tr>
           </thead>
           <tbody>
@@ -622,11 +623,11 @@ function CostBreakdown({ data, executor }) {
                     {m.tickets > 0 ? fmtMoney(m[c.key]) : "—"}
                   </td>
                 ))}
-                <td className={`${cellCls} font-semibold text-polair-dark`}>
-                  {m.tickets > 0 ? fmtMoney(m.total) : "—"}
-                </td>
                 <td className={`${cellCls} text-gray-700`}>
                   {m.tickets > 0 ? fmtKm(m.mileage) : "—"}
+                </td>
+                <td className={`${cellCls} font-semibold text-polair-dark`}>
+                  {m.tickets > 0 ? fmtMoney(m.total) : "—"}
                 </td>
               </tr>
             ))}
@@ -641,8 +642,8 @@ function CostBreakdown({ data, executor }) {
                     {fmtMoney(total[c.key])}
                   </td>
                 ))}
-                <td className={`${cellCls} text-polair-dark`}>{fmtMoney(total.total)}</td>
                 <td className={cellCls}>{fmtKm(total.mileage)}</td>
+                <td className={`${cellCls} text-polair-dark`}>{fmtMoney(total.total)}</td>
               </tr>
             </tfoot>
           )}
