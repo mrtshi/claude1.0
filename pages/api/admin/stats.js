@@ -16,7 +16,6 @@ import {
 } from "../../../lib/dataUtils";
 
 const YEAR_PERIODS = { "2026": 2026, "2025": 2025, "2024": 2024 };
-const YEARS = [2024, 2025, 2026];
 
 export default async function handler(req, res) {
   if (requireAdminSession(req, res)) return;
@@ -39,27 +38,6 @@ export default async function handler(req, res) {
   const topExecutorsByCount = getTopExecutorsByCount(effectiveRows, 10);
   const monthlyAverageCheck = getMonthlyAverageCheck(rows, executor || null);
   const costBreakdown = getMonthlyCostBreakdown(rows, executor || null);
-
-  // Per-year statistics: each year gets its own average check, top
-  // executors and monthly cost breakdown. Independent of the custom
-  // date range; follows the executor filter.
-  const yearly = {};
-  for (const y of YEARS) {
-    const yRows = filterByDateRange(
-      rows,
-      new Date(y, 0, 1),
-      new Date(y, 11, 31, 23, 59, 59, 999)
-    );
-    const yStats = getExecutorStats(yRows, executor || null);
-    yearly[y] = {
-      totalTickets: yStats.totalTickets,
-      averageCheck: yStats.averageCheck,
-      approvedCount: yStats.approvedCount,
-      approvedSum: yStats.approvedSum,
-      topExecutors: getTopExecutorsByCount(yRows, 10),
-      costBreakdown: getMonthlyCostBreakdown(yRows, executor || null),
-    };
-  }
 
   const dPeriod = dailyPeriod || "7d";
   const year = YEAR_PERIODS[dPeriod];
@@ -103,7 +81,6 @@ export default async function handler(req, res) {
       statusCounts: executorStats.statusCounts,
     },
     topExecutorsByCount,
-    yearly,
     monthlyAverageCheck,
     costBreakdown,
     daily,

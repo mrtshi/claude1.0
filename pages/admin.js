@@ -15,9 +15,6 @@ const TABS = [
   { key: "repeats", label: "Повторные заявки" },
 ];
 
-// Years available for quick selection and per-year columns
-const YEAR_BUTTONS = [2024, 2025, 2026];
-
 // Converts an HTML date input value (YYYY-MM-DD) to Russian dd.mm.yyyy
 // display format. Returns empty string for empty input.
 function formatRuDate(isoDate) {
@@ -51,13 +48,6 @@ export default function AdminPage() {
   const [loadingStats, setLoadingStats] = useState(false);
   const [statusError, setStatusError] = useState("");
   const [statsError, setStatsError] = useState("");
-
-  // The year whose full range (01.01–31.12) is currently selected via
-  // the quick buttons; null when a custom date range is set.
-  const activeYear =
-    YEAR_BUTTONS.find(
-      (y) => startDate === `${y}-01-01` && endDate === `${y}-12-31`
-    ) ?? null;
 
   const fetchStatus = useCallback(async () => {
     setStatusError("");
@@ -168,16 +158,6 @@ export default function AdminPage() {
   function handleReportsChanged() {
     fetchStatus();
     fetchStats();
-  }
-
-  function selectYear(y) {
-    if (activeYear === y) {
-      setStartDate("");
-      setEndDate("");
-    } else {
-      setStartDate(`${y}-01-01`);
-      setEndDate(`${y}-12-31`);
-    }
   }
 
   if (!authChecked) {
@@ -334,25 +314,6 @@ export default function AdminPage() {
             <div className="lg:col-span-2 flex flex-col gap-6 min-w-0">
               <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
                 <h3 className="font-semibold text-gray-800 mb-4">Статистика по исполнителю</h3>
-
-                {/* Quick year selection */}
-                <div className="flex flex-wrap items-center gap-2 mb-4">
-                  <span className="text-xs text-gray-400 mr-1">Год:</span>
-                  {YEAR_BUTTONS.map((y) => (
-                    <button
-                      key={y}
-                      onClick={() => selectYear(y)}
-                      className={`px-4 py-1.5 text-sm font-medium rounded-md border transition-colors ${
-                        activeYear === y
-                          ? "bg-polair-blue text-white border-polair-blue"
-                          : "bg-white text-gray-600 border-gray-300 hover:border-polair-blue hover:text-polair-blue"
-                      }`}
-                    >
-                      {y}
-                    </button>
-                  ))}
-                </div>
-
                 <div className="flex flex-col sm:flex-row gap-3 mb-4 flex-wrap">
                   <select
                     value={executor}
@@ -443,114 +404,71 @@ export default function AdminPage() {
                 />
               )}
 
+              {stats?.executorStats && (
+                <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+                  <h3 className="font-semibold text-gray-800 text-sm mb-1">Средний чек</h3>
+                  <p className="text-[11px] text-gray-400 mb-3">
+                    {startDate || endDate
+                      ? `За период ${formatRuDate(startDate) || "…"} — ${formatRuDate(endDate) || "…"}`
+                      : "За всё время"}
+                  </p>
+                  {stats.executorStats.averageCheck !== null ? (
+                    <>
+                      <p className="text-2xl font-bold text-polair-dark">
+                        {stats.executorStats.averageCheck.toLocaleString("ru-RU", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}{" "}
+                        ₽
+                      </p>
+                      <p className="text-[11px] text-gray-400 mt-2">
+                        По {stats.executorStats.approvedCount} утверждённым заявкам на сумму{" "}
+                        {stats.executorStats.approvedSum.toLocaleString("ru-RU", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}{" "}
+                        ₽
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">
+                      Нет утверждённых заявок за выбранный период
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {stats?.topExecutorsByCount && stats.topExecutorsByCount.length > 0 && (
+                <div className="flex-1 bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+                  <h3 className="font-semibold text-gray-800 mb-1">Топ исполнителей</h3>
+                  <p className="text-xs text-gray-400 mb-4">
+                    По количеству уникальных заявок за выбранный период
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {stats.topExecutorsByCount.map((e, i) => (
+                      <div key={e.executor + i} className="flex items-center gap-3">
+                        <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-right">
+                          {i + 1}
+                        </span>
+                        <span className="text-sm text-gray-700 flex-1 min-w-0 truncate" title={e.executor}>
+                          {e.executor}
+                        </span>
+                        <span className="text-sm font-semibold text-polair-dark flex-shrink-0">
+                          {e.count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Средний чек — колонки по годам */}
-          {stats?.yearly && (
-            <div className="mt-6">
-              <h3 className="font-semibold text-gray-800 mb-1">Средний чек по годам</h3>
-              <p className="text-xs text-gray-400 mb-4">
-                Утверждённые заявки за каждый год{executor ? ` · ${executor}` : ""}
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {YEAR_BUTTONS.map((y) => {
-                  const yd = stats.yearly[y];
-                  return (
-                    <div
-                      key={y}
-                      className="bg-white border border-gray-200 rounded-xl shadow-sm p-4"
-                    >
-                      <p className="text-xs text-gray-400 mb-1">{y} год</p>
-                      {yd && yd.averageCheck !== null ? (
-                        <>
-                          <p className="text-2xl font-bold text-polair-dark">
-                            {yd.averageCheck.toLocaleString("ru-RU", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}{" "}
-                            ₽
-                          </p>
-                          <p className="text-[11px] text-gray-400 mt-2">
-                            По {yd.approvedCount} утверждённым заявкам на сумму{" "}
-                            {yd.approvedSum.toLocaleString("ru-RU", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}{" "}
-                            ₽
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-sm text-gray-400 italic">
-                          Нет утверждённых заявок за {y} год
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Топ исполнителей — колонки по годам */}
-          {stats?.yearly && (
-            <div className="mt-6">
-              <h3 className="font-semibold text-gray-800 mb-1">Топ исполнителей по годам</h3>
-              <p className="text-xs text-gray-400 mb-4">
-                По количеству уникальных заявок за каждый год
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {YEAR_BUTTONS.map((y) => {
-                  const list = stats.yearly[y]?.topExecutors || [];
-                  return (
-                    <div
-                      key={y}
-                      className="bg-white border border-gray-200 rounded-xl shadow-sm p-5"
-                    >
-                      <h4 className="font-semibold text-gray-800 text-sm mb-4">{y} год</h4>
-                      {list.length > 0 ? (
-                        <div className="flex flex-col gap-2">
-                          {list.map((e, i) => (
-                            <div key={e.executor + i} className="flex items-center gap-3">
-                              <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-right">
-                                {i + 1}
-                              </span>
-                              <span
-                                className="text-sm text-gray-700 flex-1 min-w-0 truncate"
-                                title={e.executor}
-                              >
-                                {e.executor}
-                              </span>
-                              <span className="text-sm font-semibold text-polair-dark flex-shrink-0">
-                                {e.count}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-400 italic">Нет данных за {y} год</p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           {stats?.costBreakdown?.months?.length > 0 && (
-          {/* Разбивка стоимости — отдельная таблица за каждый год */}
-          {stats?.yearly &&
-            YEAR_BUTTONS.map((y) =>
-              stats.yearly[y]?.costBreakdown?.months?.length > 0 ? (
-                <div className="mt-6" key={y}>
-                  <CostBreakdown
-                    data={stats.yearly[y].costBreakdown}
-                    executor={executor}
-                    title={`Разбивка стоимости по месяцам — ${y} год`}
-                  />
-                </div>
-              ) : null
-            )}
+            <div className="mt-6">
+              <CostBreakdown data={stats.costBreakdown} executor={executor} />
+            </div>
+          )}
 
           {stats && (
             <div className="text-xs text-gray-400 mt-4">
@@ -658,7 +576,7 @@ function fmtKm(n) {
 // parts / transport) with total mileage. Same population as the average
 // check: approved tickets, month = month of "Дата принятия заявки". The
 // "Общая стоимость" column equals the monthly sum behind the average check.
-function CostBreakdown({ data, executor, title = "Разбивка стоимости по месяцам" }) {
+function CostBreakdown({ data, executor }) {
   const { months, total, hasOther, undatedCount } = data;
 
   const columns = [
@@ -673,7 +591,7 @@ function CostBreakdown({ data, executor, title = "Разбивка стоимо�
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-      <h3 className="font-semibold text-gray-800 mb-1">{title}</h3>
+      <h3 className="font-semibold text-gray-800 mb-1">Разбивка стоимости по месяцам</h3>
       <p className="text-xs text-gray-400 mb-4">
         Утверждённые заявки, месяц — по дате принятия. Не зависит от выбранного периода
         {executor ? ` · ${executor}` : ""}. «Общая стоимость» равна сумме заявок за месяц,
