@@ -400,7 +400,8 @@ export default function AdminPage() {
                   <p className="text-sm text-gray-400">Загрузка...</p>
                 ) : stats?.executorStats ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <StatBox label="Уникальных заявок" value={stats.executorStats.totalTickets} />
+                    <StatBox label="Уникальных
+                    Всего заявок" value={stats.executorStats.totalTickets} />
                     <div>
                       <p className="text-xs text-gray-400 mb-1">По статусам</p>
                       <div className="flex flex-col gap-1">
@@ -497,7 +498,7 @@ export default function AdminPage() {
             <div className="mt-6">
               <h3 className="font-semibold text-gray-800 mb-1">Топ исполнителей по годам</h3>
               <p className="text-xs text-gray-400 mb-4">
-                По количеству уникальных заявок за каждый год
+                По количеству Всего заявок за каждый год
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {YEAR_BUTTONS.map((y) => {
