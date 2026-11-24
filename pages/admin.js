@@ -400,8 +400,7 @@ export default function AdminPage() {
                   <p className="text-sm text-gray-400">Загрузка...</p>
                 ) : stats?.executorStats ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <StatBox label="Уникальных
-                    Всего заявок" value={stats.executorStats.totalTickets} />
+                    <StatBox label="Всего заявок" value={stats.executorStats.totalTickets} />
                     <div>
                       <p className="text-xs text-gray-400 mb-1">По статусам</p>
                       <div className="flex flex-col gap-1">
