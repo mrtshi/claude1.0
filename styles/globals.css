@@ -35,3 +35,77 @@ html, body {
   opacity: 1 !important;
   visibility: visible !important;
 }
+
+/* ===================== DARK THEME =====================
+   Activated by the sun/moon toggle in the Header, which adds the
+   "dark" class to <html> and persists the choice in localStorage. */
+
+html.dark body {
+  background: #0b1424;
+  color: #dbe4f0;
+}
+
+/* Surfaces */
+html.dark .bg-white { background-color: #1b2942 !important; }
+html.dark .bg-white\/40 { background-color: rgba(27, 41, 66, 0.45) !important; }
+html.dark .bg-gray-100 { background-color: #263652 !important; }
+html.dark .bg-red-50 { background-color: #3d1f27 !important; }
+html.dark .bg-red-100 { background-color: #4d2731 !important; }
+html.dark .bg-amber-50 { background-color: #3b3013 !important; }
+html.dark .bg-orange-100 { background-color: #453117 !important; }
+
+/* Borders */
+html.dark .border-gray-100 { border-color: #263652 !important; }
+html.dark .border-gray-200 { border-color: #30435f !important; }
+html.dark .border-gray-300 { border-color: #3c5170 !important; }
+html.dark .border-white\/50 { border-color: rgba(255, 255, 255, 0.08) !important; }
+html.dark .border-red-200 { border-color: #5b2a35 !important; }
+html.dark .border-amber-200 { border-color: #5c5220 !important; }
+
+/* Text */
+html.dark .text-gray-800 { color: #e2e8f0 !important; }
+html.dark .text-gray-700 { color: #cbd5e1 !important; }
+html.dark .text-gray-600 { color: #a9b7cc !important; }
+html.dark .text-gray-500 { color: #93a3bd !important; }
+html.dark .text-gray-400 { color: #7d8dab !important; }
+html.dark .text-red-700 { color: #fca5a5 !important; }
+html.dark .text-red-600 { color: #f87171 !important; }
+html.dark .text-amber-700,
+html.dark .text-amber-800 { color: #fcd34d !important; }
+html.dark .text-yellow-700 { color: #fde047 !important; }
+html.dark .text-orange-700 { color: #fdba74 !important; }
+html.dark .text-green-700 { color: #86efac !important; }
+
+/* Form controls */
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #16233a;
+  color: #e2e8f0;
+  border-color: #3c5170;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #7d8dab;
+}
+html.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+}
+
+/* Charts (recharts) */
+html.dark .recharts-wrapper text,
+html.dark .recharts-cartesian-axis-tick text {
+  fill: #a9b7cc !important;
+}
+html.dark .recharts-default-tooltip {
+  background-color: #1b2942 !important;
+  border-color: #30435f !important;
+}
+html.dark .recharts-cartesian-grid line {
+  stroke: #263652;
+}
+
+/* Scrollbars */
+html.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #30435f;
+}
