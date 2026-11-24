@@ -537,7 +537,6 @@ export default function AdminPage() {
             </div>
           )}
 
-          {stats?.costBreakdown?.months?.length > 0 && (
           {/* Разбивка стоимости — отдельная таблица за каждый год */}
           {stats?.yearly &&
             YEAR_BUTTONS.map((y) =>
